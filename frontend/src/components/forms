@@ -1,0 +1,55 @@
+import React, { useState } from 'react';
+
+const ResumeUploadForm = () => {
+    const [file, setFile] = useState(null);
+    const [error, setError] = useState('');
+
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile && selectedFile.type === 'application/pdf') {
+            setFile(selectedFile);
+            setError('');
+        } else {
+            setError('Please select a valid PDF file.');
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!file) {
+            setError('Please upload a file before submitting.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('resume', file);
+
+        try {
+            const response = await fetch('/api/resumes/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to upload resume.');
+            }
+
+            // Handle successful upload (e.g., redirect or show a success message)
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <div>
+                <label htmlFor="resume">Upload Resume (PDF only):</label>
+                <input type="file" id="resume" onChange={handleFileChange} />
+                {error && <p className="error">{error}</p>}
+            </div>
+            <button type="submit">Upload</button>
+        </form>
+    );
+};
+
+export default ResumeUploadForm;

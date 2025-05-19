@@ -1,0 +1,19 @@
+{
+  "name": "resume-verification-smart-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for the Resume Verification application",
+  "scripts": {
+    "test": "hardhat test",
+    "deploy": "node scripts/deploy.js",
+    "verify": "node scripts/verify.js"
+  },
+  "devDependencies": {
+    "hardhat": "^2.0.0",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "solidity-coverage": "^0.7.16"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.3.2"
+  }
+}
