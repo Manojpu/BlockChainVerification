@@ -1,15 +1,22 @@
+anojekanayaka / Documents / BlockChain / resume -
+  verification -
+  app / frontend / next.config.ts;
 const path = require("path");
 
-const withImages = require("next-images");
-
-module.exports = withImages({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
-  env: {
-    API_URL: process.env.API_URL,
-    BLOCKCHAIN_URL: process.env.BLOCKCHAIN_URL,
+  images: {
+    domains: [],
   },
-  webpack: (config) => {
-    config.resolve.alias["@"] = path.resolve(__dirname, "src");
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname, "src"),
+    };
+
     return config;
   },
-});
+};
+
+module.exports = nextConfig;
