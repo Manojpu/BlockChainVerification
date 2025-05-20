@@ -1,15 +1,14 @@
-const path = require("path");
-
-const withImages = require("next-images");
-
-module.exports = withImages({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
+  swcMinify: true,
   env: {
-    API_URL: process.env.API_URL,
-    BLOCKCHAIN_URL: process.env.BLOCKCHAIN_URL,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_BLOCKCHAIN_NETWORK: process.env.NEXT_PUBLIC_BLOCKCHAIN_NETWORK,
   },
-  webpack: (config) => {
-    config.resolve.alias["@"] = path.resolve(__dirname, "src");
-    return config;
+  images: {
+    domains: ["localhost"],
   },
-});
+};
+
+module.exports = nextConfig;
