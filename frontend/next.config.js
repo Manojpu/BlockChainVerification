@@ -1,6 +1,3 @@
-anojekanayaka / Documents / BlockChain / resume -
-  verification -
-  app / frontend / next.config.ts;
 const path = require("path");
 
 /** @type {import('next').NextConfig} */
