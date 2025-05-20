@@ -196,6 +196,18 @@ class ResumeVerificationService:
         """
         return self.work_experience_service.verify(resume_id, experience_index, approval)
     
+    def get_all_resumes(self):
+        """
+        Get all resumes with verification details from the database.
+        """
+        # Assuming you have a collection for verification info
+        verification_collection = self.db.verification_info
+        
+        # Get all verification records
+        verifications = list(verification_collection.find({}))
+        
+        return verifications
+    
     def close(self):
         """Close connections."""
         self.db.close()

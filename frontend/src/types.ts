@@ -22,17 +22,39 @@ export interface WorkExperience {
   verified: boolean;
 }
 
+// Add or update in your types.ts file
 export interface Resume {
   _id: string;
-  resume_id: string;
   job_id: string;
   username: string;
-  is_verified: "VERIFIED" | "PENDING" | "REJECTED";
+  is_verified: string; // "PENDING", "VERIFIED", or "REJECTED"
   status: string;
   ranking_score: number;
   name: string;
   email: string;
   phone: string;
-  education: Education[];
-  work_experience: WorkExperience[];
+  education: Array<{
+    send: {
+      degree: string;
+      institution: string;
+      gpa?: number;
+    };
+    actual?: {
+      degree: string;
+      institution: string;
+      gpa?: number;
+    };
+    verified: string; // "PENDING", "BLOCKCHAIN_VERIFIED", "SUBMITTED", "VERIFIED", or "REJECTED"
+  }>;
+  work_experience: Array<{
+    send: {
+      position: string;
+      company: string;
+    };
+    actual?: {
+      position: string;
+      company: string;
+    };
+    verified: string; // "PENDING", "BLOCKCHAIN_VERIFIED", "SUBMITTED", "VERIFIED", or "REJECTED"
+  }>;
 }
