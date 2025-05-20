@@ -1,0 +1,25 @@
+# Truffle build artifacts
+build/
+contracts/*.abi.json
+contracts/*.bin
+migrations/*.js~
+
+# Truffle cache
+.cache/
+node_modules/
+
+# OpenZeppelin files (if used)
+.openzeppelin/
+
+# Hardhat or coverage (if you switch later)
+artifacts/
+coverage/
+test-coverage/
+
+# Environment
+.env
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
