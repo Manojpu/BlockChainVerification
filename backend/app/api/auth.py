@@ -1,33 +1,72 @@
-from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from app.db.models import User
-from app.db.mongodb import db
+from fastapi import APIRouter, HTTPException, Depends, Body
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
+from jose import JWTError, jwt
+from pydantic import BaseModel
+from typing import Optional
+from app.db.mongodb import get_db
+from app.core.security import create_access_token, get_password_hash, verify_password
 
-auth_bp = Blueprint('auth', __name__)
+# Define Pydantic models for request validation
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    email: str
 
-@auth_bp.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+class UserLogin(BaseModel):
+    username: str
+    password: str
 
-    if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
-    hashed_password = generate_password_hash(password)
-    new_user = User(username=username, password=hashed_password)
+class TokenData(BaseModel):
+    username: Optional[str] = None
 
-    db.users.insert_one(new_user.to_dict())
-    return jsonify({'message': 'User registered successfully'}), 201
+# Create FastAPI router
+router = APIRouter()
 
-@auth_bp.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+@router.post("/register", response_model=dict, status_code=201)
+async def register(user: UserCreate):
+    db = get_db()
+    
+    # Check if username already exists
+    existing_user = db.users.find_one({"username": user.username})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    
+    # Create new user with hashed password
+    hashed_password = get_password_hash(user.password)
+    new_user = {
+        "username": user.username,
+        "email": user.email,
+        "password": hashed_password,
+        "created_at": datetime.utcnow()
+    }
+    
+    result = db.users.insert_one(new_user)
+    return {"message": "User registered successfully", "user_id": str(result.inserted_id)}
 
-    user = db.users.find_one({'username': username})
-    if user and check_password_hash(user['password'], password):
-        return jsonify({'message': 'Login successful'}), 200
-
-    return jsonify({'message': 'Invalid username or password'}), 401
+@router.post("/login", response_model=Token)
+async def login(form_data: UserLogin):
+    db = get_db()
+    
+    # Find user in database
+    user = db.users.find_one({"username": form_data.username})
+    if not user or not verify_password(form_data.password, user["password"]):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=30)  # Token valid for 30 minutes
+    access_token = create_access_token(
+        data={"sub": user["username"]},
+        expires_delta=access_token_expires
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}

@@ -1,35 +1,56 @@
-from flask import Blueprint, request, jsonify
+from fastapi import APIRouter, Depends, HTTPException, Body
+from typing import Dict, Any, List
+from datetime import datetime
+from pydantic import BaseModel
 from app.db.mongodb import get_db
-from app.core.security import hash_password
+from app.core.security import get_current_user
 from bson.objectid import ObjectId
 
-resumes_bp = Blueprint('resumes', __name__)
+# Define Pydantic models for request/response validation
+class ResumeData(BaseModel):
+    user_id: str
+    resume_data: Dict[str, Any]
 
-@resumes_bp.route('/resumes', methods=['POST'])
-def upload_resume():
-    data = request.json
-    if not data or 'user_id' not in data or 'resume_data' not in data:
-        return jsonify({'error': 'Invalid input'}), 400
+class ResumeResponse(BaseModel):
+    id: str
+    user_id: str
+    resume_data: Dict[str, Any]
 
+# Create FastAPI router
+router = APIRouter()
+
+@router.post("/resumes", response_model=Dict[str, str], status_code=201)
+async def upload_resume(data: ResumeData):
     db = get_db()
     resume = {
-        'user_id': data['user_id'],
-        'resume_data': data['resume_data'],
+        'user_id': data.user_id,
+        'resume_data': data.resume_data,
         'uploaded_at': datetime.utcnow()
     }
     result = db.resumes.insert_one(resume)
-    return jsonify({'id': str(result.inserted_id)}), 201
+    return {"id": str(result.inserted_id)}
 
-@resumes_bp.route('/resumes/<resume_id>', methods=['GET'])
-def get_resume(resume_id):
+@router.get("/resumes/{resume_id}", response_model=ResumeResponse)
+async def get_resume(resume_id: str):
     db = get_db()
     resume = db.resumes.find_one({'_id': ObjectId(resume_id)})
     if resume is None:
-        return jsonify({'error': 'Resume not found'}), 404
-    return jsonify({'id': str(resume['_id']), 'user_id': resume['user_id'], 'resume_data': resume['resume_data']}), 200
+        raise HTTPException(status_code=404, detail="Resume not found")
+    return {
+        "id": str(resume['_id']), 
+        "user_id": resume['user_id'], 
+        "resume_data": resume['resume_data']
+    }
 
-@resumes_bp.route('/resumes/user/<user_id>', methods=['GET'])
-def get_user_resumes(user_id):
+@router.get("/resumes/user/{user_id}", response_model=List[ResumeResponse])
+async def get_user_resumes(user_id: str):
     db = get_db()
     resumes = list(db.resumes.find({'user_id': user_id}))
-    return jsonify([{'id': str(resume['_id']), 'resume_data': resume['resume_data']} for resume in resumes]), 200
+    return [
+        {
+            "id": str(resume['_id']), 
+            "user_id": resume['user_id'], 
+            "resume_data": resume['resume_data']
+        } 
+        for resume in resumes
+    ]
