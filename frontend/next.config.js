@@ -1,14 +1,15 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: true,
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_BLOCKCHAIN_NETWORK: process.env.NEXT_PUBLIC_BLOCKCHAIN_NETWORK,
-  },
-  images: {
-    domains: ["localhost"],
-  },
-};
+const path = require("path");
 
-module.exports = nextConfig;
+const withImages = require("next-images");
+
+module.exports = withImages({
+  reactStrictMode: true,
+  env: {
+    API_URL: process.env.API_URL,
+    BLOCKCHAIN_URL: process.env.BLOCKCHAIN_URL,
+  },
+  webpack: (config) => {
+    config.resolve.alias["@"] = path.resolve(__dirname, "src");
+    return config;
+  },
+});
