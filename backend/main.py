@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Body, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
-from typing import List, Optional, Dict, Union, Any
+from typing import List, Optional, Dict, Union, Any,Annotated
 from pydantic import BaseModel, Field
 import os
 from datetime import datetime
@@ -64,8 +64,8 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+    def __get_pydantic_json_schema__(cls, _schema_generator):
+        return {"type": "string"}
 
 class Resume(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -81,11 +81,11 @@ class Resume(BaseModel):
     education: List[Education]
     work_experience: List[WorkExperience]
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-
+    model_config = {
+        "populate_by_name": True,
+        "arbitrary_types_allowed": True,
+        "json_encoders": {ObjectId: str}
+    }
 class VerificationRequest(BaseModel):
     resume_id: str
     type: str  # "education" or "work"

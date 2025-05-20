@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Education, WorkExperience } from "@/types";
-import { CheckCircle, AlertTriangle } from "lucide-react";
+import { CheckCircle, AlertTriangle, Edit } from "lucide-react";
+import ManualVerificationForm from "@/components/dashboard/ManualVerification";
 
 interface QualificationCardProps {
   item: Education | WorkExperience;
@@ -22,6 +23,8 @@ const QualificationCard: React.FC<QualificationCardProps> = ({
   resumeId,
   onVerify,
 }) => {
+  const [showManualVerification, setShowManualVerification] = useState(false);
+
   const isEducation = type === "education";
   const title = isEducation
     ? (item as Education).send.degree
@@ -44,6 +47,11 @@ const QualificationCard: React.FC<QualificationCardProps> = ({
     actualTitle !== null &&
     (actualTitle !== title || actualSubtitle !== subtitle);
 
+  const handleManualVerificationComplete = () => {
+    setShowManualVerification(false);
+    // The parent component will refresh the data
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-4 relative">
       {/* Verification status indicator */}
@@ -63,6 +71,13 @@ const QualificationCard: React.FC<QualificationCardProps> = ({
               className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
             >
               Reject
+            </button>
+            <button
+              onClick={() => setShowManualVerification(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs flex items-center"
+            >
+              <Edit size={12} className="mr-1" />
+              Edit
             </button>
           </div>
         )}
@@ -94,6 +109,20 @@ const QualificationCard: React.FC<QualificationCardProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Manual verification form */}
+      {showManualVerification && (
+        <ManualVerificationForm
+          resumeId={resumeId}
+          type={type}
+          index={index}
+          onComplete={handleManualVerificationComplete}
+          initialData={{
+            title: actualTitle || title,
+            subtitle: actualSubtitle || subtitle,
+          }}
+        />
       )}
     </div>
   );
