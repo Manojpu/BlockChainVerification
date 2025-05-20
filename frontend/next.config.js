@@ -14,6 +14,14 @@ const nextConfig = {
 
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8000/:path*' // Assuming your FastAPI server runs on port 8000
+      }
+    ]
+  }
 };
 
 module.exports = nextConfig;

@@ -15,8 +15,8 @@ const HomePage: React.FC = () => {
   const fetchResumes = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/resumes");
-      setResumes(response.data);
+      const response = await axios.get("/api/resume-verification/resumes");
+      setResumes(response.data.data); // Note the .data property to access the actual resume array
       setError(null);
     } catch (err) {
       setError("Failed to fetch resumes. Please try again later.");

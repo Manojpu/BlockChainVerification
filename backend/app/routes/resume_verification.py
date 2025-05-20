@@ -157,3 +157,24 @@ async def verify_work_experience(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error verifying work experience: {str(e)}")
+
+@router.get("/resumes", response_model=Dict[str, Any])
+async def get_all_resumes(
+    service: ResumeVerificationService = Depends(get_resume_verification_service)
+):
+    """
+    Get all resumes with their verification status.
+    """
+    try:
+        resumes = service.get_all_resumes()
+        
+        # Convert any ObjectId to string before returning
+        resumes = [convert_objectid(resume) for resume in resumes]
+            
+        return {
+            "success": True,
+            "message": f"Successfully retrieved {len(resumes)} resumes",
+            "data": resumes
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching resumes: {str(e)}")
