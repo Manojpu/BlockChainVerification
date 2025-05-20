@@ -1,4 +1,6 @@
-const withImages = require('next-images');
+const path = require("path");
+
+const withImages = require("next-images");
 
 module.exports = withImages({
   reactStrictMode: true,
@@ -7,7 +9,7 @@ module.exports = withImages({
     BLOCKCHAIN_URL: process.env.BLOCKCHAIN_URL,
   },
   webpack: (config) => {
-    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
+    config.resolve.alias["@"] = path.resolve(__dirname, "src");
     return config;
   },
 });
