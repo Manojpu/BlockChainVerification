@@ -1,5 +1,5 @@
 # main.py - FastAPI backend for resume verification
-from fastapi import FastAPI, HTTPException, Body, Depends
+from fastapi import FastAPI, HTTPException, Body, Depends, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
@@ -94,13 +94,15 @@ class VerificationRequest(BaseModel):
 
 # API endpoints
 
-@app.get("/api/resumes", response_model=List[Resume])
+router = APIRouter(prefix="/api", tags=["api"])
+
+@router.get("/resumes", response_model=List[Resume])
 async def get_resumes():
     """Get all resumes from the database"""
     resumes = await db.resumes.find().to_list(1000)
     return resumes
 
-@app.get("/api/resumes/{resume_id}", response_model=Resume)
+@router.get("/resumes/{resume_id}", response_model=Resume)
 async def get_resume(resume_id: str):
     """Get a specific resume by ID"""
     resume = await db.resumes.find_one({"resume_id": resume_id})
@@ -108,7 +110,7 @@ async def get_resume(resume_id: str):
         raise HTTPException(status_code=404, detail="Resume not found")
     return resume
 
-@app.post("/api/verify")
+@router.post("/verify")
 async def verify_qualification(verification: VerificationRequest):
     """Verify a qualification (education or work experience)"""
     # Check if the resume exists
@@ -174,7 +176,7 @@ async def verify_qualification(verification: VerificationRequest):
     return {"success": True, "action": verification.action}
 
 # Optional: Endpoint to simulate blockchain verification
-@app.post("/api/blockchain-verify")
+@router.post("/blockchain-verify")
 async def blockchain_verify(
     data: Dict[str, Any] = Body(...)
 ):
@@ -208,6 +210,11 @@ async def blockchain_verify(
         "timestamp": datetime.utcnow().isoformat()
     }
 
+
+app.include_router(router)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+
